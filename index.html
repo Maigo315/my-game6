@@ -1,0 +1,752 @@
+<!-- v0.47v: Death weakness rates adjusted and Dragon Girl attack increased. -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+<meta name="theme-color" content="#101722" />
+<title>境界のフラドベルグ - DEV v0.01</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="rotateNotice">
+  <div class="card">
+    <span class="phone">📱</span>
+    <strong>端末を横向きにしてください</strong>
+    <p>この試作はスマホ横画面を基準に作っています。</p>
+  </div>
+</div>
+
+<div id="app">
+  <header class="topbar">
+    <div>
+      <div class="title" id="topTitle">辺境の町ミレスタ</div>
+      <div class="subtitle" id="topSubtitle">境界のフラドベルグ DEV v0.01</div>
+    </div>
+    <div class="grow"></div>
+    <div class="battle-speed-box" id="battleSpeedBox" aria-label="戦闘速度">
+      <span>速度</span>
+      <button class="speed-btn" data-speed="0.75">ゆっくり</button>
+      <button class="speed-btn active" data-speed="1">標準</button>
+      <button class="speed-btn" data-speed="1.5">速い</button>
+      <button class="speed-btn" data-speed="2">高速</button>
+    </div>
+    <div class="resource"><span class="dev-badge" id="devBadge">DEV v0.01</span><span class="badge">💰 <span id="goldText">0</span> G</span></div>
+  </header>
+
+  <main id="titleScreen" class="screen active">
+    <section class="title-card">
+      <div class="title-kicker">FRADBERG PROJECT</div>
+      <h1>境界のフラドベルグ</h1>
+      <div class="title-sub">新作プロトタイプ</div>
+      <div class="title-actions">
+        <button class="menu-btn title-action" id="titleNewBtn">はじめから</button>
+        <button class="menu-btn title-action" id="titleContinueBtn">つづきから</button>
+      </div>
+      <div class="title-version">DEV v0.01</div>
+    </section>
+  </main>
+
+  <main id="homeScreen" class="screen">
+    <section class="home-card">
+      <h1 id="townHomeTitle">辺境の町ミレスタ</h1>
+      <div class="big-actions">
+        <button class="menu-btn" id="goWorld"><span class="icon">🗺️</span>世界マップ</button>
+        <button class="menu-btn" id="dummyParty"><span class="icon">👥</span>仲間編成</button>
+        <button class="menu-btn" id="townShopBtn"><span class="icon">🛒</span>ショップ</button>
+        <button class="menu-btn" id="dummyTalk"><span class="icon">💬</span>会話</button>
+      </div>
+      <div class="home-system-actions">
+        <button class="small-btn" id="homeInventoryBtn">🎒 所持品</button>
+        <button class="small-btn" id="saveLoadBtn">💾 セーブ／ロード</button>
+        <button class="small-btn" id="returnTitleBtn">↩ タイトルに戻る</button>
+      </div>
+    </section>
+  </main>
+
+
+  <main id="partyScreen" class="screen">
+    <div class="party-manage-shell" id="partyManageShell">
+      <header class="party-manage-head">
+        <div>
+          <div class="party-manage-kicker" id="partyManageKicker">MILESTA PARTY ORGANIZE</div>
+          <h2 id="partyManageTitle">仲間編成</h2>
+          <p id="partyManageDesc">仲間を選んで、移動先の枠をタップ。主人公は探索パーティから外せませんが、控えには移動できます。</p>
+        </div>
+        <div class="party-manage-head-actions">
+          <button class="small-btn party-wait-selected-btn" id="partyWaitSelectedBtn" disabled>🏠 ミレスタに待機させる</button>
+          <button class="small-btn party-waiting-open-btn" id="partyWaitingOpenBtn">👥 待機から呼び出す</button>
+          <button class="small-btn" id="partyBackBtn">← ミレスタへ</button>
+        </div>
+      </header>
+
+      <div class="party-manage-grid" id="partyManageGrid">
+        <section class="party-manage-column battle">
+          <div class="party-column-head"><strong>⚔ バトルメンバー</strong><span id="partyBattleCount">1 / 4</span></div>
+          <div class="party-slot-list" id="partyBattleSlots"></div>
+        </section>
+
+        <section class="party-manage-column reserve">
+          <div class="party-column-head"><strong>🛡 控え</strong><span id="partyReserveCount">0 / 6</span></div>
+          <div class="party-slot-list reserve-slots" id="partyReserveSlots"></div>
+        </section>
+
+      </div>
+
+      <section class="party-waiting-view" id="partyWaitingView">
+        <div class="party-waiting-view-head">
+          <div><strong>👥 ミレスタ待機から呼び出す</strong><span id="partyWaitingCount">0</span></div>
+          <button class="small-btn party-waiting-deploy-btn" id="partyWaitingDeployBtn" disabled>👥 編成に呼び出す</button>
+          <button class="small-btn" id="partyWaitingCloseBtn">← 編成へ戻る</button>
+        </div>
+        <div class="party-wait-list" id="partyWaitingList"></div>
+      </section>
+
+      <footer class="party-detail-panel" id="partyDetailPanel">
+        <div class="party-detail-portrait" id="partyDetailPortrait"><span>👤</span></div>
+        <div class="party-detail-main">
+          <div class="party-detail-name" id="partyDetailName">主人公</div>
+          <div class="party-detail-meta" id="partyDetailMeta">Lv1</div>
+          <div class="party-detail-stats" id="partyDetailStats"></div>
+        </div>
+        <div class="party-detail-side">
+          <div class="party-detail-guide" id="partyDetailGuide">仲間をタップすると選択できます。</div>
+          <button class="party-detail-action" id="partyDetailOpenBtn">詳細を見る</button>
+        </div>
+      </footer>
+    </div>
+  </main>
+
+
+  <main id="characterScreen" class="screen">
+    <div class="character-shell">
+      <header class="character-head">
+        <div>
+          <div class="character-kicker">CHARACTER PROFILE</div>
+          <h2>キャラ詳細</h2>
+          <p>能力・装備・固有特性・習得済みスキルを確認できます。</p>
+        </div>
+        <button class="small-btn" id="characterBackBtn">← 仲間編成へ</button>
+      </header>
+
+      <div class="character-body">
+        <section class="character-portrait-card">
+          <div class="character-portrait" id="characterPortrait"><span>👤</span></div>
+        </section>
+
+        <section class="character-info-card">
+          <div class="character-identity">
+            <div class="character-name-wrap">
+              <div class="character-name" id="characterName">主人公</div>
+              <div class="character-level" id="characterLevel">LEVEL 1</div>
+            </div>
+            <div class="character-compact-resources">
+              <div class="character-resource">
+                <div class="character-resource-head"><span>HP</span><strong id="characterHpText">100 / 100</strong></div>
+                <div class="bar"><i id="characterHpBar" style="width:100%"></i></div>
+              </div>
+              <div class="character-resource">
+                <div class="character-resource-head"><span>MP</span><strong id="characterMpText">40 / 40</strong></div>
+                <div class="bar mp"><i id="characterMpBar" style="width:100%"></i></div>
+              </div>
+              <div class="character-exp-box">
+                <div class="character-exp-head"><span>EXP</span><strong id="characterExpText">0 / 30</strong></div>
+                <div class="bar exp"><i id="characterExpBar" style="width:0%"></i></div>
+                <div class="character-exp-note" id="characterExpNote">次のレベルまで 30 EXP</div>
+              </div>
+            </div>
+            <div class="character-nav" aria-label="キャラクター切り替え">
+              <button id="characterPrevBtn" type="button" aria-label="前のキャラクター">◀</button>
+              <span class="character-nav-count" id="characterNavCount">1 / 1</span>
+              <button id="characterNextBtn" type="button" aria-label="次のキャラクター">▶</button>
+            </div>
+          </div>
+
+          <div class="character-tabs" role="tablist" aria-label="キャラ詳細ページ">
+            <button class="character-tab active" id="characterTabStatus" data-character-tab="status" type="button">能力・装備</button>
+            <button class="character-tab" id="characterTabSkills" data-character-tab="skills" type="button">スキル</button>
+          </div>
+
+          <div class="character-tab-panel active" id="characterPanelStatus">
+            <div id="characterEquipment"></div>
+            <div class="character-section-title">UNIQUE TRAIT</div>
+            <div id="characterTrait"></div>
+          </div>
+
+          <div class="character-tab-panel" id="characterPanelResistance">
+            <div class="character-section-title">RESISTANCE</div>
+            <div id="characterResistance"></div>
+          </div>
+
+          <div class="character-tab-panel" id="characterPanelSkills">
+            <div class="character-section-title">LEARNED SKILLS</div>
+            <div class="character-skill-list" id="characterSkillList"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <main id="worldScreen" class="screen">
+    <div class="world-wrap">
+      <section class="map-panel">
+        <div class="world-map-viewport" id="worldMapViewport" aria-label="世界マップ。指で上下左右にスライドできます">
+          <div class="world-map" id="worldMap">
+            <svg class="world-route-layer" viewBox="0 0 1780 1200" aria-hidden="true">
+              <path class="route" id="milestaRoute" d="M 210 440 C 210 403, 214 365, 220 330"></path>
+              <path class="route" id="caveRoute" d="M 220 330 C 258 298, 304 257, 350 240"></path>
+              <path class="route" id="yodyRoute" d="M 350 240 C 413 235, 484 245, 545 255" style="display:none"></path>
+              <path class="route" id="yodyTownRoute" d="M 545 255 C 551 305, 551 365, 545 420" style="display:none"></path>
+              <path class="route" id="footpathRoute" d="M 545 255 C 585 242, 625 226, 665 215" style="display:none"></path>
+              <path class="route" id="yodyMountainWorldRoute" d="M 545 255 C 576 203, 611 142, 650 95" style="display:none"></path>
+              <path class="route" id="tilenoRegionWorldRoute" d="M 650 95 C 712 98, 776 112, 835 135" style="display:none"></path>
+              <path class="route" id="tilenoTownWorldRoute" d="M 835 135 C 838 190, 838 252, 835 315" style="display:none"></path>
+              <path class="route" id="tilenoWetlandWorldRoute" d="M 835 135 C 840 105, 850 78, 865 52" style="display:none"></path>
+              <path class="route" id="tilenoToxicWetlandWorldRoute" d="M 865 52 C 905 48, 950 48, 995 52" style="display:none"></path>
+              <path class="route" id="zelrenoForestWorldRoute" d="M 835 135 C 900 128, 972 130, 1040 135" style="display:none"></path>
+              <path class="route" id="granzelPlainsWorldRoute" d="M 1040 135 C 1095 160, 1160 205, 1235 260" style="display:none"></path>
+              <path class="route" id="granzelTownWorldRoute" d="M 1235 260 C 1295 252, 1355 246, 1415 250" style="display:none"></path>
+              <path class="route" id="iceCorridorWorldRoute" d="M 1235 260 C 1300 220, 1370 145, 1450 95" style="display:none"></path>
+              <path class="route" id="runelCavernWorldRoute" d="M 1235 260 C 1325 305, 1440 355, 1560 395" style="display:none"></path>
+              <path class="route" id="runelRegionWorldRoute" d="M 1560 395 C 1485 392, 1395 405, 1320 425" style="display:none"></path>
+              <path class="route" id="runelTownWorldRoute" d="M 1320 425 C 1325 468, 1328 520, 1325 565" style="display:none"></path>
+              <path class="route" id="runelRuinsWorldRoute" d="M 1320 425 C 1260 420, 1195 420, 1135 425" style="display:none"></path>
+              <path class="route" id="fairyGroveWorldRoute" d="M 1320 425 C 1275 468, 1220 525, 1170 565" style="display:none"></path>
+              <path class="route sea-route" id="salidSeaWorldRoute" d="M 545 420 C 590 575, 675 780, 800 930" style="display:none"></path>
+              <path class="route" id="salidTownWorldRoute" d="M 800 930 C 875 930, 960 930, 1050 930" style="display:none"></path>
+              <path class="route" id="salidLavaCaveWorldRoute" d="M 800 930 C 730 935, 640 945, 560 950" style="display:none"></path>
+              <path class="route" id="salidSunTempleWorldRoute" d="M 800 930 C 790 975, 755 1035, 700 1080" style="display:none"></path>
+            </svg>
+            <div class="world-region-label" style="left:105px;top:392px">ミレスタ周辺</div>
+            <div class="world-region-label" style="left:470px;top:170px">ヨーディー地方</div>
+                        <div class="world-region-label" style="left:825px;top:185px">ティレーノ地方</div>
+            <div class="world-region-label" style="left:1000px;top:190px">ゼルレーノ森林地帯</div>
+            <div class="world-region-label" style="left:1235px;top:118px">グランゼル大平原</div>
+            <div class="world-region-label" style="left:1215px;top:355px">ルネル地方</div>
+            <div class="world-region-label" style="left:470px;top:625px">ヨーディー海</div>
+            <div class="world-region-label" id="salidContinentLabel" style="left:715px;top:845px;display:none">サリード大陸</div>
+            <button class="area-pin" id="milestaTownPin" data-area="milestaTown" data-map-x="210" data-map-y="440" style="left:210px;top:440px">
+              <span>🏘️</span><strong>ミレスタ</strong>
+            </button>
+            <button class="area-pin selected" data-area="plains" data-map-x="220" data-map-y="330" style="left:220px;top:330px">
+              <span>🌿</span><strong>ミレスタ平原</strong>
+            </button>
+            <button class="area-pin locked" id="cavePin" data-area="cave" data-map-x="350" data-map-y="240" style="left:350px;top:240px">
+              <span>🕳️</span><strong>小さな洞窟</strong>
+            </button>
+            <button class="area-pin" id="yodyRegionPin" data-area="yodyRegion" data-map-x="545" data-map-y="255" style="left:545px;top:255px;display:none">
+              <span>🌊</span><strong>ヨーディー地方</strong>
+            </button>
+            <button class="area-pin" id="yodyTownPin" data-area="yodyTown" data-map-x="545" data-map-y="420" style="left:545px;top:420px;display:none">
+              <span>⚓</span><strong>港町ヨーディー</strong>
+            </button>
+            <button class="area-pin" id="footpathPin" data-area="footpath" data-map-x="665" data-map-y="215" style="left:665px;top:215px;display:none">
+              <span>🌲</span><strong>麓の小道</strong>
+            </button>
+            <button class="area-pin" id="yodyMountainWorldPin" data-area="yodyMountain" data-map-x="650" data-map-y="95" style="left:650px;top:95px;display:none">
+              <span>⛰️</span><strong>ヨーディー山道</strong>
+            </button>
+            <button class="area-pin" id="tilenoRegionWorldPin" data-area="tilenoRegion" data-map-x="835" data-map-y="135" style="left:835px;top:135px;display:none">
+              <span>🌿</span><strong>ティレーノ地方</strong>
+            </button>
+            <button class="area-pin" id="tilenoTownWorldPin" data-area="tilenoTown" data-map-x="835" data-map-y="315" style="left:835px;top:315px;display:none">
+              <span>🏘️</span><strong>ティレーノの街</strong>
+            </button>
+            <button class="area-pin" id="tilenoWetlandWorldPin" data-area="tilenoWetland" data-map-x="865" data-map-y="52" style="left:865px;top:52px;display:none">
+              <span>🌾</span><strong>ティレーノ湿原</strong>
+            </button>
+            <button class="area-pin" id="tilenoToxicWetlandWorldPin" data-area="tilenoToxicWetland" data-map-x="995" data-map-y="52" style="left:995px;top:52px;display:none">
+              <span>☠️</span><strong>ティレーノ毒湿地</strong>
+            </button>
+            <button class="area-pin" id="zelrenoForestWorldPin" data-area="zelrenoForest" data-map-x="1040" data-map-y="135" style="left:1040px;top:135px;display:none">
+              <span>🌲</span><strong>ゼルレーノ森林地帯</strong>
+            </button>
+            <button class="area-pin" id="granzelPlainsWorldPin" data-area="granzelPlains" data-map-x="1235" data-map-y="260" style="left:1235px;top:260px;display:none">
+              <span>🌾</span><strong>グランゼル大平原</strong>
+            </button>
+            <button class="area-pin" id="granzelTownWorldPin" data-area="granzelTown" data-map-x="1415" data-map-y="250" style="left:1415px;top:250px;display:none">
+              <span>🏰</span><strong>グランゼル城下町</strong>
+            </button>
+            <button class="area-pin" id="iceCorridorWorldPin" data-area="iceCorridor" data-map-x="1450" data-map-y="95" style="left:1450px;top:95px;display:none">
+              <span>❄️</span><strong>氷雪の回廊</strong>
+            </button>
+            <button class="area-pin" id="runelCavernWorldPin" data-area="runelCavern" data-map-x="1560" data-map-y="395" style="left:1560px;top:395px;display:none">
+              <span>🪨</span><strong>ルネル岩窟</strong>
+            </button>
+            <button class="area-pin" id="runelRegionWorldPin" data-area="runelRegion" data-map-x="1320" data-map-y="425" style="left:1320px;top:425px;display:none">
+              <span>🌿</span><strong>ルネル地方</strong>
+            </button>
+            <button class="area-pin" id="runelTownWorldPin" data-area="runelTown" data-map-x="1325" data-map-y="565" style="left:1325px;top:565px;display:none">
+              <span>🏘️</span><strong>ルネルの街</strong>
+            </button>
+            <button class="area-pin" id="runelRuinsWorldPin" data-area="runelRuins" data-map-x="1135" data-map-y="425" style="left:1135px;top:425px;display:none">
+              <span>🏚️</span><strong>ルネルパリオ城下町跡</strong>
+            </button>
+            <button class="area-pin" id="fairyGroveWorldPin" data-area="fairyGrove" data-map-x="1170" data-map-y="565" style="left:1170px;top:565px;display:none">
+              <span>✨</span><strong>妖精郷</strong>
+            </button>
+            <button class="area-pin" id="salidDesertWorldPin" data-area="salidDesert" data-map-x="800" data-map-y="930" style="left:800px;top:930px;display:none">
+              <span>🏜️</span><strong>サリード砂漠・東</strong>
+            </button>
+            <button class="area-pin" id="salidTownWorldPin" data-area="salidTown" data-map-x="1050" data-map-y="930" style="left:1050px;top:930px;display:none">
+              <span>🏙️</span><strong>サリード城下町</strong>
+            </button>
+            <button class="area-pin locked" id="salidLavaCaveWorldPin" data-area="salidLavaCave" data-map-x="560" data-map-y="950" style="left:560px;top:950px;display:none">
+              <span>🌋</span><strong>溶岩洞窟</strong>
+            </button>
+            <button class="area-pin locked" id="salidSunTempleWorldPin" data-area="salidSunTemple" data-map-x="700" data-map-y="1080" style="left:700px;top:1080px;display:none">
+              <span>☀️</span><strong>太陽の神殿</strong>
+            </button>
+          </div>
+        </div>
+        <div class="world-pan-hint">☝️ 地図を上下左右にスライド</div>
+      </section>
+      <section class="info-panel">
+        <button class="small-btn" id="backHome" style="align-self:flex-start;padding:8px 12px">← ミレスタへ</button>
+        <h2 id="areaName" style="margin-top:14px">ミレスタ平原</h2>
+        <p id="areaDesc">町のすぐ外に広がる穏やかな平原。危険な魔物娘もほとんどいない。</p>
+        <button class="action-btn" id="departBtn">探索を開始する</button>
+      </section>
+    </div>
+  </main>
+
+  <main id="exploreScreen" class="screen">
+    <aside class="party-panel">
+      <div class="party-title" id="explorePartyTitle">BATTLE MEMBER 1 / 4　RESERVE 0 / 6</div>
+      <div class="party-list" id="explorePartyList"></div>
+      <button class="reserve-chip" id="exploreReserveBtn">👥 パーティ編成</button>
+      <button class="reserve-chip" id="exploreSkillBtn">✨ スキル</button>
+      <button class="reserve-chip" id="exploreItemBtn">🎒 所持品</button>
+      <div class="run-info">
+        <div class="statbox progress-stat"><strong id="floorText">入口</strong></div>
+        <div class="statbox">獲得G<strong id="runGoldText">0</strong></div>
+        <div class="statbox">戦闘EXP<strong id="runExpText">0</strong></div>
+      </div>
+    </aside>
+
+    <section class="explore-panel">
+      <div class="map-scroll" id="mapScroll">
+        <svg id="mapSvg" viewBox="0 0 1000 720" preserveAspectRatio="xMidYMid meet" aria-label="探索ノードマップ"></svg>
+      </div>
+      <div class="map-header">
+        <div class="map-header-left">
+          <span class="chip" id="exploreAreaLabel">🌿 ミレスタ平原</span>
+          <span class="map-treasure-counter" id="exploreTreasureCounter" hidden>🪎 お宝 0/0</span>
+        </div>
+        <div class="grow"></div>
+        <div class="legend">
+          <span>⚔ 戦闘</span><span>🪎 宝箱</span><span>❤ 回復</span><span>🛒 店</span><span>？ イベント</span>
+        </div>
+      </div>
+      <div class="map-hint">金色に光るノードをタップして上へ進む</div>
+    </section>
+  </main>
+
+  <main id="battleScreen" class="screen">
+    <div class="battle-shell">
+      <div class="battle-upper">
+        <aside class="battle-focus">
+          <div class="battle-focus-title">ACTION SELECT</div>
+          <div class="battle-focus-name" id="battleActorName">スライム娘</div>
+          <div class="battle-focus-portrait" id="battleActorPortrait"></div>
+          <div class="battle-focus-caption" id="battleActorCaption">行動を選択してください</div>
+        </aside>
+
+        <section class="battle-field" id="battleField">
+          <div class="battle-area-label" id="battleAreaLabel">🌿 ミレスタ平原</div>
+          <div class="battle-test-tools" id="battleTestTools">
+            <select id="formationAreaSelect" aria-label="敵編成エリア">
+              <option value="plains">ミレスタ平原</option>
+              <option value="cave1">小さな洞窟</option>
+              <option value="cave2">洞窟 第二層</option>
+              <option value="caveSide">洞窟の横道</option>
+              <option value="yodyRegion">ヨーディー地方</option>
+              <option value="footpath">麓の小道</option>
+              <option value="yodyMountain">ヨーディー山道</option>
+              <option value="yodyMountainBoss">ヨーディー山道 ボス</option>
+              <option value="tilenoRegion">ティレーノ地方</option>
+              <option value="zelrenoForest">ゼルレーノ森林地帯</option>
+              <option value="granzelPlains">グランゼル大平原</option>
+              <option value="runelCavern">ルネル岩窟</option>
+              <option value="runelRegion">ルネル地方</option>
+              <option value="runelRuins">ルネルパリオ城下町跡</option>
+              <option value="tilenoWetland">ティレーノ湿原</option>
+              <option value="tilenoToxicWetland">ティレーノ毒湿地</option>
+              <option value="tilenoToxicBoss">ティレーノ毒湿地 ボス</option>
+              <option value="rare">レア枠</option>
+              <option value="caveBoss">魔界の尖兵</option>
+            </select>
+            <button id="formationPrevBtn">◀</button>
+            <span class="formation-num" id="formationNum">1 / 4</span>
+            <button id="formationNextBtn">▶</button>
+          </div>
+          <div class="enemy-stage" id="enemyStage" data-count="2"></div>
+          <div class="battle-effect-layer" id="battleEffectLayer"></div>
+          <div class="battle-drop-stage" id="battleDropStage" aria-live="polite">
+            <div class="battle-drop-card">
+              <strong class="battle-drop-headline" id="battleDropHeadline">犬娘はアイテムを落とした！</strong>
+              <div class="battle-drop-icon">🎁</div>
+              <span class="battle-drop-item" id="battleDropItemText">石の爪を入手した！</span>
+              <button class="battle-drop-continue" id="battleDropContinueBtn" type="button">タップして進む</button>
+            </div>
+          </div>
+          <div class="battle-recruit-stage" id="battleRecruitStage" aria-live="polite">
+            <div class="battle-recruit-glow"></div>
+            <div class="battle-recruit-body">
+              <img id="recruitImage" alt="">
+            </div>
+            <div class="battle-recruit-copy">
+              <strong id="recruitHeadline">犬娘が起き上がった！</strong>
+              <span id="recruitQuestion">仲間にしますか？</span>
+              <small id="recruitTestNote"></small>
+            </div>
+            <div class="battle-recruit-actions" id="recruitActions">
+              <button class="battle-recruit-yes" id="recruitYesBtn">はい</button>
+              <button class="battle-recruit-no" id="recruitNoBtn">いいえ</button>
+            </div>
+            <button class="battle-recruit-continue" id="recruitContinueBtn" type="button">タップして進む</button>
+          </div>
+          <div class="battle-message" id="battleMessage">4人全員の行動を選んでから、まとめてターンを処理します。</div>
+          <button class="battle-result-tap" id="battleContinueBtn" type="button" aria-label="戦闘結果を確認して進む">
+            <span>タップして進む</span>
+          </button>
+        </section>
+
+        <aside class="battle-commands" id="battleCommands">
+          <h3>COMMAND</h3>
+          <div class="battle-target-panel" id="battleTargetPanel">
+            <div class="battle-target-icon" id="battleTargetIcon">🎯</div>
+            <div class="battle-target-title" id="battleTargetTitle">対象を選択</div>
+            <p class="battle-target-hint" id="battleTargetHint">光っている対象をタップしてください。</p>
+            <div class="battle-target-list" id="battleTargetList" hidden></div>
+            <button class="battle-target-back" id="battleTargetBackBtn" type="button">↩ 戻る</button>
+          </div>
+          <div class="command-grid">
+            <button class="cmd" data-command="攻撃"><strong>⚔</strong>攻撃</button>
+            <button class="cmd skill-cmd" data-command="スキル" id="skillBtn"><strong>✨</strong><span id="skillBtnLabel">スキル</span><small id="skillCostLabel"></small></button>
+            <button class="cmd" data-command="防御"><strong>🛡</strong>防御</button>
+            <button class="cmd" data-command="アイテム"><strong>🧪</strong>アイテム</button>
+            <button class="cmd swap-cmd" id="swapBtn"><strong>↔</strong>交代</button>
+            <button class="cmd escape-cmd" id="escapeBtn"><strong>💨</strong>逃走</button>
+          </div>
+          <div class="auto-controls">
+            <button class="auto-command-btn" id="turnAutoBtn" type="button"><strong>⚔</strong><span>通常<br>AUTO</span></button>
+            <button class="auto-command-btn" id="autoToggleBtn" type="button"><strong>✨</strong><span>スキル<br>AUTO</span></button>
+          </div>
+          <div class="auto-start-note" id="autoStartNote">全員入力で自動開始</div>
+          <button id="battleExecuteBtn" type="button" hidden></button>
+          <button class="test-exit-btn" id="battleWinBtn">× テスト終了</button>
+        </aside>
+      </div>
+
+      <div class="battle-party-row" id="battlePartyRow"></div>
+    </div>
+  </main>
+
+</div>
+
+
+<div class="swap-modal" id="skillModal">
+  <div class="swap-panel skill-select-panel">
+    <div class="swap-head">
+      <h2 id="skillSelectTitle">スキル選択</h2>
+      <p id="skillSelectLead">使用するスキルを選択</p>
+      <button class="swap-close" id="skillCloseBtn">閉じる</button>
+    </div>
+    <div class="skill-party-status" id="skillPartyStatus" aria-label="バトルメンバーの現在HPとMP"></div>
+    <div class="skill-list" id="skillList"></div>
+    <div class="swap-note">上段で味方の現在HP・MPを確認できます。単体攻撃は現在選択中の敵へ、回復は選択後に味方を指定します。</div>
+  </div>
+</div>
+
+<div class="swap-modal" id="itemModal">
+  <div class="swap-panel skill-select-panel">
+    <div class="swap-head">
+      <h2 id="itemSelectTitle">アイテム</h2>
+      <p id="itemSelectLead">使用するアイテムを選択</p>
+      <button class="swap-close" id="itemCloseBtn">閉じる</button>
+    </div>
+    <div class="skill-party-status" id="itemPartyStatus" aria-label="バトルメンバーの現在HPとMP"></div>
+    <div class="skill-list" id="itemList"></div>
+    <div class="swap-note">戦闘中のアイテムはバトルメンバーだけが対象です。使用者の1行動として、SPD順で発動します。</div>
+  </div>
+</div>
+
+<div class="swap-modal" id="exploreItemModal">
+  <div class="swap-panel skill-select-panel explore-item-panel inventory-panel">
+    <div class="swap-head">
+      <h2 id="inventoryTitle">所持品</h2>
+      <p id="exploreItemLead">現在の所持品を確認</p>
+      <button class="swap-close" id="exploreItemCloseBtn">閉じる</button>
+    </div>
+    <div class="inventory-tabs" id="inventoryTabs">
+      <button class="inventory-tab active" type="button" data-inventory-tab="items">🧪 アイテム</button>
+      <button class="inventory-tab" type="button" data-inventory-tab="equipment">⚔️ 装備品</button>
+      <button class="inventory-tab" type="button" data-inventory-tab="key">⚜️ 貴重品</button>
+    </div>
+    <div id="exploreItemListView" class="inventory-main">
+      <div class="inventory-tab-panel" id="inventoryItemsPanel">
+        <div class="inventory-list" id="exploreFieldItemList"></div>
+      </div>
+      <div class="inventory-tab-panel" id="inventoryEquipmentPanel" hidden>
+        <div class="inventory-list" id="inventoryEquipmentList"></div>
+      </div>
+      <div class="inventory-tab-panel" id="inventoryKeyPanel" hidden>
+        <div class="inventory-list" id="inventoryKeyList"></div>
+      </div>
+    </div>
+    <div id="exploreItemTargetView" hidden>
+      <button class="explore-skill-back" id="exploreItemBackBtn" type="button">← 所持品へ</button>
+      <div class="item-summary-note explore-item-summary" id="exploreItemSummary"></div>
+      <div class="explore-item-target-strip" id="exploreItemTargets"></div>
+    </div>
+  </div>
+</div>
+
+<div class="swap-modal" id="exploreSkillModal">
+  <div class="swap-panel skill-select-panel explore-item-panel">
+    <div class="swap-head">
+      <h2>探索中のスキル</h2>
+      <p id="exploreSkillLead">スキルを使う仲間を選択</p>
+      <button class="swap-close" id="exploreSkillCloseBtn">閉じる</button>
+    </div>
+    <div id="exploreSkillActorView">
+      <div class="explore-item-target-strip" id="exploreSkillActors"></div>
+    </div>
+    <div id="exploreSkillListView" hidden>
+      <button class="explore-skill-back" id="exploreSkillActorBackBtn" type="button">← 使用者選択へ</button>
+      <div class="item-summary-note explore-skill-actor-summary" id="exploreSkillActorSummary"></div>
+      <div class="skill-list explore-skill-list-wrap" id="exploreSkillList"></div>
+    </div>
+    <div id="exploreSkillTargetView" hidden>
+      <button class="explore-skill-back" id="exploreSkillBackBtn" type="button">← スキル一覧へ</button>
+      <div class="item-summary-note explore-item-summary" id="exploreSkillSummary"></div>
+      <div class="explore-item-target-strip" id="exploreSkillTargets"></div>
+    </div>
+    <div class="swap-note">探索中の回復スキルは、バトルメンバーと控えの両方に使用できます。戦闘外では毒によるHP減少は発生しません。</div>
+  </div>
+</div>
+
+<div class="levelup-modal" id="levelUpModal" aria-live="polite">
+  <div class="levelup-panel">
+    <div class="levelup-head">
+      <div class="levelup-head-icon">✨</div>
+      <div class="levelup-head-copy">
+        <div class="levelup-kicker">LEVEL UP</div>
+        <div class="levelup-title" id="levelUpTitle">主人公のレベルが上がった！</div>
+      </div>
+      <div class="levelup-step" id="levelUpStep">1 / 1</div>
+    </div>
+    <div class="levelup-body">
+      <div class="levelup-portrait-wrap">
+        <div class="levelup-portrait" id="levelUpPortrait"></div>
+        <div class="levelup-level"><strong id="levelUpOldLevel">1</strong><span>→</span><strong id="levelUpNewLevel">2</strong></div>
+      </div>
+      <div class="levelup-info">
+        <div class="levelup-growth-title">STATUS GROWTH</div>
+        <div class="levelup-growth-grid" id="levelUpGrowthGrid"></div>
+        <div class="levelup-skill-box" id="levelUpSkillBox" hidden>
+          <div class="levelup-skill-title">✨ 新たなスキルを習得！</div>
+          <div class="levelup-skill-list" id="levelUpSkillList"></div>
+        </div>
+      </div>
+    </div>
+    <div class="levelup-actions">
+      <small>複数人がレベルアップした場合は順番に表示します。</small>
+      <button class="small-btn levelup-next" id="levelUpNextBtn">次へ</button>
+    </div>
+  </div>
+</div>
+
+<div class="swap-modal" id="swapModal">
+  <div class="swap-panel">
+    <div class="swap-head">
+      <h2>メンバー交代</h2>
+      <p id="swapLead">控えから交代する仲間を選択</p>
+      <button class="swap-close" id="swapCloseBtn">閉じる</button>
+    </div>
+    <div class="reserve-grid" id="reserveGrid"></div>
+    <div class="swap-note">※ 交代・空き枠への出撃はターン消費なし。出た仲間がそのまま行動を選べます。</div>
+  </div>
+</div>
+
+
+<div class="shop-modal" id="shopModal">
+  <div class="shop-panel">
+    <div class="shop-head">
+      <div class="shop-head-copy"><h2 id="shopTitle">ショップ</h2><p id="shopLead">商品を選ぶと、装備時の能力差をその場で確認できます。</p></div>
+      <button class="swap-close" id="shopCloseBtn">閉じる</button>
+    </div>
+    <div class="shop-body">
+      <section class="shop-merchant-card" aria-label="店主">
+        <div class="shop-merchant-visual">
+          <img id="shopMerchantImg" alt="店主">
+          <div class="shop-merchant-silhouette" id="shopMerchantSilhouette" aria-label="店主のシルエット"></div>
+        </div>
+        <div class="shop-dialogue"><p id="shopMerchantLine">いらっしゃいませ。</p></div>
+      </section>
+      <section class="shop-trade">
+        <div class="shop-tabs"><button class="shop-tab active" id="shopBuyTab">買う</button><button class="shop-tab" id="shopSellTab">売る</button></div>
+        <div class="shop-main">
+          <div class="shop-list" id="shopList"></div>
+          <div class="shop-detail" id="shopDetail"></div>
+        </div>
+      </section>
+    </div>
+    <div class="shop-foot"><span>所持金</span><strong id="shopGold">0 G</strong><span class="shop-flash" id="shopFlash" aria-live="polite"></span></div>
+  </div>
+</div>
+
+
+
+<div class="name-entry-modal" id="nameEntryModal" role="dialog" aria-modal="true" aria-label="主人公の名前入力">
+  <section class="name-entry-panel">
+    <div class="name-entry-portrait"><img id="nameEntryPortrait" alt="主人公"></div>
+    <div class="name-entry-content">
+      <div class="name-entry-prompt">主人公の名前を入力してください。</div>
+      <div class="name-entry-sub">8文字まで。決定後は変更できません。</div>
+      <div class="name-entry-field"><input class="name-entry-input" id="heroNameInput" type="text" value="ロイド" maxlength="8" autocomplete="off" spellcheck="false" aria-label="主人公の名前"></div>
+      <div class="name-entry-meta"><span id="heroNameCount">3 / 8</span></div>
+      <button class="name-entry-confirm" id="heroNameConfirmBtn">決定</button>
+    </div>
+  </section>
+</div>
+
+<div class="story-event-modal" id="storyEventModal" role="dialog" aria-modal="true" aria-label="会話イベント">
+  <section class="story-event-panel" id="storyEventPanel">
+    <div class="story-event-portrait" id="storyEventPortraitWrap"><img id="storyEventPortrait" alt=""></div>
+    <div class="story-event-content">
+      <div class="story-event-speaker" id="storyEventSpeaker"></div>
+      <div class="story-event-text" id="storyEventText"></div>
+      <div class="story-event-choices" id="storyEventChoices"></div>
+      <div class="story-event-footer">
+        <span class="story-event-preview" id="storyEventPreview">DEV PREVIEW</span>
+        <span class="story-event-hint" id="storyEventHint"></span>
+        <button class="story-next" id="storyEventNextBtn">次へ ▶</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="town-talk-modal" id="townTalkModal" aria-hidden="true">
+  <section class="town-talk-panel" aria-label="町の住民会話">
+    <div class="town-talk-head">
+      <div>
+        <h2 id="townTalkTitle">ミレスタの住民</h2>
+        <p>話しかけたい相手を選んでください。</p>
+      </div>
+      <button class="town-talk-close" id="townTalkCloseBtn">閉じる</button>
+    </div>
+    <div class="town-talk-grid" id="townTalkGrid"></div>
+  </section>
+</div>
+
+<div class="debug-modal" id="debugModal">
+  <section class="debug-panel">
+    <div class="debug-head">
+      <div class="debug-head-copy"><h2>🧪 DEV TOOLS</h2><p>テスト状態は通常セーブに保存できます。必要な機能は今後ここへ追加します。</p></div>
+      <button class="swap-close" id="debugCloseBtn">閉じる</button>
+    </div>
+    <div class="debug-tabs">
+      <button class="debug-tab active" data-debug-tab="party">仲間・育成</button>
+      <button class="debug-tab" data-debug-tab="inventory">所持品・装備</button>
+      <button class="debug-tab" data-debug-tab="progress">進行</button>
+      <button class="debug-tab" data-debug-tab="battle">戦闘</button>
+    </div>
+    <div class="debug-body">
+      <div class="debug-page active" id="debugPageParty" data-debug-page="party">
+        <section class="debug-section">
+          <div class="debug-section-title">CHARACTER</div>
+          <div class="debug-control-row"><label>対象キャラ</label><select id="debugCharacterSelect"></select><div class="debug-button-row"><button class="debug-btn good" id="debugJoinBtn">加入</button><button class="debug-btn bad" id="debugLeaveBtn">離脱</button></div></div>
+          <div class="debug-status" id="debugCharacterStatus"></div>
+          <div class="debug-control-row"><label>レベル</label><input id="debugLevelInput" type="number" min="1" max="100" value="1"><div class="debug-button-row"><button class="debug-btn" id="debugSetLevelBtn">適用</button><button class="debug-btn" data-debug-level="1">Lv1</button><button class="debug-btn" data-debug-level="30">Lv30</button><button class="debug-btn gold" data-debug-level="100">MAX</button></div></div>
+        </section>
+        <section class="debug-section">
+          <div class="debug-section-title">BULK</div>
+          <div class="debug-button-row"><button class="debug-btn good" id="debugJoinAllBtn">全仲間加入</button><button class="debug-btn blue" id="debugHealAllBtn">HP・MP全回復</button><button class="debug-btn gold" id="debugSkillTestOpenBtn">スキルテスト</button></div>
+        </section>
+      </div>
+
+      <div class="debug-page" id="debugPageInventory" data-debug-page="inventory">
+        <section class="debug-section">
+          <div class="debug-section-title">GOLD</div>
+          <div class="debug-control-row"><label>変更量</label><input id="debugGoldAmount" type="number" min="1" value="1000"><div class="debug-button-row"><button class="debug-btn gold" id="debugGoldAddBtn">＋</button><button class="debug-btn bad" id="debugGoldSubBtn">－</button></div></div>
+        </section>
+        <section class="debug-section">
+          <div class="debug-section-title">ITEM</div>
+          <div class="debug-control-row"><label>アイテム</label><select id="debugItemSelect"></select><div></div></div>
+          <div class="debug-control-row"><label>個数</label><input id="debugItemAmount" type="number" min="1" value="10"><div class="debug-button-row"><button class="debug-btn good" id="debugItemAddBtn">追加</button><button class="debug-btn bad" id="debugItemSubBtn">減らす</button></div></div>
+        </section>
+        <section class="debug-section">
+          <div class="debug-section-title">EQUIPMENT</div>
+          <div class="debug-control-row"><label>装備</label><select id="debugEquipSelect"></select><div></div></div>
+          <div class="debug-control-row"><label>個数</label><input id="debugEquipAmount" type="number" min="1" value="1"><div class="debug-button-row"><button class="debug-btn good" id="debugEquipAddBtn">追加</button><button class="debug-btn bad" id="debugEquipSubBtn">減らす</button></div></div>
+          <div class="debug-status" id="debugInventoryStatus"></div>
+        </section>
+        <section class="debug-section"><div class="debug-section-title">BULK</div><div class="debug-button-row"><button class="debug-btn good" id="debugAllItemsBtn">全アイテム ＋10</button><button class="debug-btn good" id="debugAllEquipmentBtn">全装備 ＋1</button></div></section>
+      </div>
+
+      <div class="debug-page" id="debugPageProgress" data-debug-page="progress">
+        <section class="debug-section">
+          <div class="debug-section-title">PROGRESS FLAGS</div>
+          <div class="debug-toggle-grid">
+            <div class="debug-toggle-card"><span>小さな洞窟 解放</span><button class="debug-btn" id="debugCaveToggleBtn"></button></div>
+            <div class="debug-toggle-card"><span>洞窟ボス 撃破</span><button class="debug-btn" id="debugBossToggleBtn"></button></div>
+            <div class="debug-toggle-card"><span>旅商人 遭遇</span><button class="debug-btn" id="debugMerchantToggleBtn"></button></div>
+            <div class="debug-toggle-card"><span>エリザ序盤会話 完了</span><button class="debug-btn" id="debugIntroToggleBtn"></button></div>
+          </div>
+        </section>
+        <section class="debug-section"><div class="debug-section-title">QUICK SET</div><div class="debug-button-row"><button class="debug-btn good" id="debugProgressOpenBtn">現行進行をすべて解放</button><button class="debug-btn bad" id="debugProgressResetBtn">現行進行を初期状態へ</button><button class="debug-btn blue" id="debugIntroReplayBtn">序盤会話プレビュー</button></div></section>
+        <div class="debug-status">現在実装されている恒久進行フラグを操作します。ストーリーイベントを追加したら、このタブへフラグ確認・変更機能を拡張できます。</div>
+      </div>
+
+      <div class="debug-page" id="debugPageBattle" data-debug-page="battle">
+        <section class="debug-section">
+          <div class="debug-section-title">FORMATION TEST</div>
+          <div class="debug-control-row"><label>敵グループ</label><select id="debugFormationArea"></select><div></div></div>
+          <div class="debug-control-row"><label>編成</label><select id="debugFormationIndex"></select><div class="debug-button-row"><button class="debug-btn gold" id="debugBattleStartBtn">この編成で戦闘</button></div></div>
+          <div class="debug-status" id="debugFormationStatus"></div>
+        </section>
+        <section class="debug-section">
+          <div class="debug-section-title">BATTLE OPTIONS</div>
+          <div class="debug-toggle-grid">
+            <div class="debug-toggle-card"><span>勧誘判定 強制成功</span><button class="debug-btn" id="debugForceRecruitBtn"></button></div>
+            <div class="debug-toggle-card"><span>スキル確認</span><button class="debug-btn gold" id="debugBattleSkillBtn">スキルテストを開く</button></div>
+            <div class="debug-toggle-card"><span>全回復</span><button class="debug-btn blue" id="debugBattleHealBtn">HP・MP全回復</button></div>
+          </div>
+        </section>
+        <div class="debug-status">指定戦闘は現在の編成・Lv・装備を使う一時テストです。終了すると戦闘開始前のHP/MPなどへ戻ります。</div>
+      </div>
+    </div>
+    <div class="debug-foot"><strong>DEV v0.01</strong><span>デバッグ操作は手動セーブ可能</span><span id="debugFooterState"></span></div>
+  </section>
+</div>
+
+<div class="save-modal" id="saveModal">
+  <section class="save-panel">
+    <div class="save-head">
+      <div class="save-head-copy"><h2 id="saveTitle">セーブ／ロード</h2><p id="saveDesc">3つのスロットを使用できます。</p></div>
+      <button class="swap-close" id="saveCloseBtn">閉じる</button>
+    </div>
+    <div class="save-tabs" id="saveTabs">
+      <button class="save-tab active" id="saveTabSave" data-save-mode="save">セーブ</button>
+      <button class="save-tab" id="saveTabLoad" data-save-mode="load">ロード</button>
+    </div>
+    <div class="save-slot-list" id="saveSlotList"></div>
+  </section>
+</div>
+
+<div class="modal" id="modal">
+  <div class="dialog">
+    <h2 id="modalTitle">イベント</h2>
+    <p id="modalBody"></p>
+    <div class="dialog-actions" id="modalActions"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="js/confirmed-data.js"></script>
+<script src="js/confirmed-rules.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
