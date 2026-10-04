@@ -49,9 +49,10 @@
 
   <main id="homeScreen" class="screen">
     <section class="home-card">
-      <h1 id="townHomeTitle">辺境の町ミレスタ</h1>
+      <h1 id="townHomeTitle">前線都市（仮）</h1>
       <div class="big-actions">
-        <button class="menu-btn" id="goWorld"><span class="icon">🗺️</span>世界マップ</button>
+        <button class="menu-btn prototype-main-action" id="routePrototypeBtn"><span class="icon">🌀</span>境界ルートを構築する</button>
+        <button class="menu-btn legacy-action" id="goWorld"><span class="icon">🗺️</span>旧作世界マップ（確認用）</button>
         <button class="menu-btn" id="dummyParty"><span class="icon">👥</span>仲間編成</button>
         <button class="menu-btn" id="townShopBtn"><span class="icon">🛒</span>ショップ</button>
         <button class="menu-btn" id="dummyTalk"><span class="icon">💬</span>会話</button>
@@ -64,6 +65,67 @@
     </section>
   </main>
 
+
+  <main id="routeEditorScreen" class="screen">
+    <section class="route-editor-shell">
+      <header class="route-editor-head">
+        <div>
+          <div class="route-editor-kicker">BOUNDARY ROUTE / v0.01 PROTOTYPE</div>
+          <h2>境界ルート構築</h2>
+          <p>所持している地形を並べ、目的地へ至るルートを作成します。地形カードは消費されません。</p>
+        </div>
+        <button class="small-btn" id="routeEditorBackBtn">← 前線都市へ</button>
+      </header>
+
+      <div class="route-editor-main">
+        <aside class="route-destination-panel">
+          <div class="route-panel-label">DESTINATION</div>
+          <h3>🏚️ 次元の廃墟</h3>
+          <p class="route-destination-copy">次元の裂け目の向こうに漂う、出所不明の廃墟。今回はルートシステム確認用の仮目的地です。</p>
+          <div class="route-condition-list">
+            <div><span>ルート長</span><strong id="routeCondLength">0 / 2〜4</strong></div>
+            <div><span>合計Lv</span><strong id="routeCondLevel">0 / 3以上</strong></div>
+            <div><span>必須地形</span><strong id="routeCondCave">洞窟Lv1以上 0 / 1</strong></div>
+          </div>
+          <div class="route-reward-box">
+            <strong>初回試作報酬</strong>
+            <span>新ルート「森林Lv1」「洞窟Lv2」解禁</span>
+          </div>
+        </aside>
+
+        <section class="route-build-panel">
+          <div class="route-panel-label">YOUR ROUTE</div>
+          <div class="route-strip-wrap">
+            <div class="route-origin-card">
+              <span>🏙️</span><strong>前線都市</strong><small>START</small>
+            </div>
+            <div class="route-arrow">→</div>
+            <div class="route-slots" id="routeSlots"></div>
+            <div class="route-arrow">→</div>
+            <div class="route-goal-card">
+              <span>🏚️</span><strong>次元の廃墟</strong><small>GOAL</small>
+            </div>
+          </div>
+          <div class="route-build-note" id="routeBuildNote">下のカードをクリックすると、左から順に追加されます。配置済みカードをクリックすると取り外せます。</div>
+          <div class="route-editor-actions">
+            <button class="small-btn" id="routeClearBtn">すべて外す</button>
+            <button class="action-btn" id="routeDepartBtn" disabled>このルートで出発</button>
+          </div>
+        </section>
+      </div>
+
+      <section class="route-owned-panel">
+        <div class="route-owned-head">
+          <div>
+            <div class="route-panel-label">UNLOCKED ROUTES</div>
+            <h3>所持ルート</h3>
+          </div>
+          <div class="route-owned-hint">クリックで追加 / 同じ地形を複数回使用可能</div>
+        </div>
+        <div class="route-owned-grid" id="routeOwnedGrid"></div>
+      </section>
+    </section>
+  </main>
 
   <main id="partyScreen" class="screen">
     <div class="party-manage-shell" id="partyManageShell">
