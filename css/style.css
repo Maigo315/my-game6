@@ -3802,7 +3802,7 @@
 /* v0.01 境界ルート試作 */
 .prototype-main-action{border-color:#8fc9b7;background:linear-gradient(135deg,#203f3b,#1a2f39);box-shadow:0 0 24px rgba(82,190,166,.13)}
 .legacy-action{opacity:.64;font-size:.92em}
-.route-editor-shell{min-height:100%;padding:18px 22px 24px;display:flex;flex-direction:column;gap:16px;background:radial-gradient(circle at 48% 0%,rgba(52,112,116,.16),transparent 38%)}
+.route-editor-shell{min-height:100%;padding-top:18px;padding-bottom:max(24px,var(--safe-bottom));padding-left:calc(22px + var(--safe-left));padding-right:calc(22px + var(--safe-right));display:flex;flex-direction:column;gap:16px;background:radial-gradient(circle at 48% 0%,rgba(52,112,116,.16),transparent 38%)}
 .route-editor-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;padding:16px 18px;border:1px solid #334956;border-radius:14px;background:rgba(13,23,31,.92)}
 .route-editor-head h2{margin:3px 0 5px;font-size:24px}.route-editor-head p{margin:0;color:#9fb0b8;font-size:13px}
 .route-editor-kicker,.route-panel-label{font-size:10px;letter-spacing:.19em;color:#73c8b3;font-weight:800}
@@ -3819,3 +3819,117 @@
 .route-owned-panel{padding:15px 17px}.route-owned-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}.route-owned-head h3{margin-bottom:0}.route-owned-hint{font-size:10px;color:#7f929b}.route-owned-grid{display:flex;gap:10px;overflow-x:auto;padding:12px 2px 4px}.route-owned-card{cursor:pointer;flex-basis:166px;min-height:112px;justify-content:flex-start}.route-owned-card:hover{border-color:#70b6a3;transform:translateY(-2px)}.route-owned-card.locked{opacity:.45;cursor:default}.route-owned-card .route-card-meta{margin-top:3px}.route-owned-card .route-card-monsters{font-size:9px;line-height:1.45;color:#a9b6bb;margin-top:4px}
 .prototype-area-progress{font-size:10px;color:#8bd1bd;margin-left:6px}
 @media(max-width:900px){.route-editor-main{grid-template-columns:220px minmax(0,1fr)}.route-editor-shell{padding:12px}.route-origin-card,.route-goal-card,.route-slot{flex-basis:110px}.route-owned-card{flex-basis:150px}}
+
+
+/* v0.01m: smartphone landscape layout for the route prototype.
+   Keep the whole page fixed while allowing only the route strip / owned cards to scroll horizontally. */
+#routeEditorScreen{min-width:0;min-height:0;overflow:hidden}
+.route-strip-wrap,.route-owned-grid{-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scrollbar-width:none}
+.route-strip-wrap::-webkit-scrollbar,.route-owned-grid::-webkit-scrollbar{width:0;height:0}
+
+@media (orientation:landscape) and (max-height:520px){
+  #routeEditorScreen{overflow:hidden}
+  .route-editor-shell{
+    width:100%;height:100%;min-height:0;overflow:hidden;
+    padding-top:5px;padding-bottom:max(5px,var(--safe-bottom));
+    padding-left:calc(7px + var(--safe-left));padding-right:calc(7px + var(--safe-right));
+    gap:5px;
+  }
+  .route-editor-head{
+    flex:0 0 34px;min-height:34px;align-items:center;gap:8px;
+    padding:4px 7px;border-radius:9px;
+  }
+  .route-editor-head>div{min-width:0;display:flex;align-items:center}
+  .route-editor-kicker,.route-editor-head p{display:none}
+  .route-editor-head h2{margin:0;font-size:13px;line-height:1;white-space:nowrap}
+  .route-editor-head .small-btn{padding:6px 9px;border-radius:8px;font-size:9px;white-space:nowrap}
+
+  .route-editor-main{
+    flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:5px;
+  }
+  .route-destination-panel{
+    flex:0 0 44px;min-height:44px;padding:5px 7px;border-radius:9px;
+    display:flex;align-items:center;gap:7px;overflow:hidden;
+  }
+  .route-destination-panel>.route-panel-label,.route-destination-copy,.route-reward-box{display:none}
+  .route-destination-panel h3{flex:0 0 auto;margin:0;font-size:12px;white-space:nowrap}
+  .route-condition-list{flex:1 1 auto;min-width:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+  .route-condition-list>div{
+    min-width:0;padding:4px 5px;border-radius:6px;font-size:7.5px;line-height:1.15;gap:3px;
+    align-items:center;
+  }
+  .route-condition-list span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .route-condition-list strong{font-size:8px;white-space:nowrap}
+
+  .route-build-panel{
+    flex:1 1 auto;min-height:0;padding:5px 6px;border-radius:9px;
+  }
+  .route-build-panel>.route-panel-label{display:none}
+  .route-strip-wrap{
+    flex:1 1 auto;min-height:94px;margin-top:0;padding:5px 5px 7px;gap:5px;
+    border-radius:8px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;
+    touch-action:pan-x;
+  }
+  .route-origin-card,.route-goal-card,.route-slot{
+    flex:0 0 78px;min-height:78px;height:78px;padding:5px;border-radius:8px;gap:2px;
+    scroll-snap-align:center;
+  }
+  .route-origin-card,.route-goal-card{flex-basis:72px}
+  .route-origin-card>span,.route-goal-card>span{font-size:17px}
+  .route-origin-card strong,.route-goal-card strong{font-size:9px;line-height:1.15}
+  .route-origin-card small,.route-goal-card small{font-size:6px}
+  .route-arrow{font-size:14px;margin:0 -1px}
+  .route-slots{gap:5px}
+  .route-slot-number{right:5px;top:4px;font-size:6px}
+  .route-card-icon{font-size:15px}
+  .route-card-name{font-size:9px;line-height:1.15}
+  .route-card-meta{font-size:6.5px;line-height:1.28}
+  .route-card-remove{display:none}
+  .route-build-note{display:none}
+  .route-editor-actions{flex:0 0 28px;min-height:28px;margin-top:4px;gap:5px}
+  .route-editor-actions .small-btn,.route-editor-actions .action-btn{
+    min-width:0;width:auto;margin:0;padding:6px 9px;border-radius:8px;font-size:8px;line-height:1;
+  }
+  .route-editor-actions .action-btn{min-width:112px}
+
+  .route-owned-panel{
+    flex:0 0 82px;min-height:82px;padding:5px 6px;border-radius:9px;overflow:hidden;
+  }
+  .route-owned-head{height:16px;min-height:16px;align-items:center;gap:6px}
+  .route-owned-head .route-panel-label{display:none}
+  .route-owned-head h3{margin:0;font-size:10px;line-height:1}
+  .route-owned-hint{font-size:6.5px;white-space:nowrap}
+  .route-owned-grid{height:56px;gap:5px;padding:3px 0 0;overflow-x:auto;overflow-y:hidden;touch-action:pan-x}
+  .route-owned-card{
+    flex:0 0 106px;min-height:53px;height:53px;padding:4px 6px;border-radius:8px;
+    justify-content:center;gap:1px;
+  }
+  .route-owned-card .route-card-icon{font-size:13px}
+  .route-owned-card .route-card-name{font-size:8.5px}
+  .route-owned-card .route-card-meta{font-size:6px;line-height:1.2}
+  .route-owned-card .route-card-monsters{display:none}
+}
+
+@media (orientation:landscape) and (max-height:430px){
+  .route-editor-shell{padding-top:4px;padding-bottom:max(4px,var(--safe-bottom));gap:4px}
+  .route-editor-head{flex-basis:30px;min-height:30px;padding:3px 6px}
+  .route-editor-head h2{font-size:12px}
+  .route-editor-head .small-btn{padding:5px 8px;font-size:8px}
+  .route-editor-main{gap:4px}
+  .route-destination-panel{flex-basis:38px;min-height:38px;padding:4px 6px}
+  .route-destination-panel h3{font-size:10px}
+  .route-condition-list>div{padding:3px 4px;font-size:6.5px}
+  .route-condition-list strong{font-size:7px}
+  .route-build-panel{padding:4px 5px}
+  .route-strip-wrap{min-height:80px;padding:4px 4px 5px}
+  .route-origin-card,.route-goal-card,.route-slot{flex-basis:68px;min-height:68px;height:68px;padding:4px}
+  .route-origin-card,.route-goal-card{flex-basis:63px}
+  .route-card-icon{font-size:13px}.route-card-name{font-size:8px}.route-card-meta{font-size:5.8px}
+  .route-origin-card strong,.route-goal-card strong{font-size:8px}
+  .route-editor-actions{flex-basis:25px;min-height:25px;margin-top:3px}
+  .route-editor-actions .small-btn,.route-editor-actions .action-btn{padding:5px 8px;font-size:7px}
+  .route-owned-panel{flex-basis:70px;min-height:70px;padding:4px 5px}
+  .route-owned-head{height:14px;min-height:14px}.route-owned-head h3{font-size:9px}.route-owned-hint{font-size:6px}
+  .route-owned-grid{height:47px;padding-top:2px}.route-owned-card{flex-basis:96px;min-height:45px;height:45px;padding:3px 5px}
+  .route-owned-card .route-card-icon{font-size:11px}.route-owned-card .route-card-name{font-size:7.5px}.route-owned-card .route-card-meta{font-size:5.5px}
+}
