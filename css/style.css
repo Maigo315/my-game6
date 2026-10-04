@@ -3933,3 +3933,172 @@
   .route-owned-grid{height:47px;padding-top:2px}.route-owned-card{flex-basis:96px;min-height:45px;height:45px;padding:3px 5px}
   .route-owned-card .route-card-icon{font-size:11px}.route-owned-card .route-card-name{font-size:7.5px}.route-owned-card .route-card-meta{font-size:5.5px}
 }
+
+/* v0.01n: second smartphone-landscape pass.
+   The active route is the primary reading surface; the owned-route row is a compact palette. */
+@media (orientation:landscape) and (max-height:520px){
+  .route-editor-shell{
+    gap:4px;
+    padding-top:4px;
+    padding-bottom:max(4px,var(--safe-bottom));
+  }
+  .route-editor-head{
+    flex:0 0 30px;
+    min-height:30px;
+    padding:3px 7px;
+  }
+  .route-editor-head h2{font-size:11px}
+  .route-editor-head .small-btn{padding:5px 8px;font-size:8px}
+
+  .route-editor-main{gap:4px}
+  .route-destination-panel{
+    flex:0 0 38px;
+    min-height:38px;
+    padding:4px 7px;
+  }
+  .route-destination-panel h3{font-size:10px}
+  .route-condition-list>div{padding:3px 5px;font-size:6.8px}
+  .route-condition-list strong{font-size:7.4px}
+
+  .route-build-panel{
+    min-height:0;
+    padding:6px 7px 5px;
+  }
+  .route-strip-wrap{
+    min-height:132px;
+    padding:8px 9px;
+    gap:7px;
+    align-items:center;
+  }
+  .route-origin-card,.route-goal-card,.route-slot{
+    flex:0 0 112px;
+    width:112px;
+    min-height:118px;
+    height:118px;
+    padding:8px 8px 7px;
+    border-radius:10px;
+    gap:3px;
+    overflow:hidden;
+  }
+  .route-origin-card,.route-goal-card{
+    flex-basis:96px;
+    width:96px;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+  }
+  .route-origin-card>span,.route-goal-card>span{font-size:23px}
+  .route-origin-card strong,.route-goal-card strong{
+    font-size:10px;
+    line-height:1.2;
+    white-space:normal;
+  }
+  .route-origin-card small,.route-goal-card small{font-size:6.5px}
+  .route-arrow{font-size:18px;margin:0 -1px}
+  .route-slots{gap:7px}
+  .route-slot-number{right:6px;top:5px;font-size:7px}
+
+  .route-slot.filled{
+    align-items:center;
+    justify-content:flex-start;
+    text-align:center;
+  }
+  .route-slot:not(.filled){
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+  }
+  .route-card-icon{font-size:22px;line-height:1}
+  .route-card-name{
+    width:100%;
+    font-size:10.5px;
+    line-height:1.2;
+    text-align:center;
+    white-space:normal;
+    overflow-wrap:anywhere;
+  }
+  .route-card-meta{
+    width:100%;
+    margin-top:3px;
+    display:grid;
+    gap:2px;
+    font-size:7.5px;
+    line-height:1.2;
+    color:#9aadb5;
+    text-align:left;
+  }
+  .route-card-meta>span{
+    min-width:0;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:5px;
+    white-space:nowrap;
+  }
+  .route-card-meta b{
+    flex:0 0 auto;
+    color:#718892;
+    font-size:6.8px;
+    font-weight:700;
+  }
+  .route-card-meta .route-card-tags{
+    display:block;
+    white-space:normal;
+    line-height:1.15;
+    overflow-wrap:anywhere;
+  }
+  .route-card-meta .route-card-tags b{margin-right:5px}
+
+  .route-editor-actions{
+    flex:0 0 28px;
+    min-height:28px;
+    margin-top:4px;
+  }
+  .route-editor-actions .small-btn,.route-editor-actions .action-btn{
+    padding:6px 10px;
+    font-size:8px;
+  }
+  .route-editor-actions .action-btn{min-width:116px}
+
+  .route-owned-panel{
+    flex:0 0 66px;
+    min-height:66px;
+    padding:4px 7px 5px;
+  }
+  .route-owned-head{height:14px;min-height:14px}
+  .route-owned-head h3{font-size:9px}
+  .route-owned-hint{font-size:6px}
+  .route-owned-grid{
+    height:43px;
+    gap:6px;
+    padding:3px 0 0;
+    align-items:stretch;
+  }
+  .route-owned-card{
+    flex:0 0 116px;
+    width:116px;
+    min-height:40px;
+    height:40px;
+    padding:4px 8px;
+    border-radius:8px;
+    flex-direction:row;
+    align-items:center;
+    justify-content:flex-start;
+    gap:6px;
+    text-align:left;
+    overflow:hidden;
+  }
+  .route-owned-card .route-card-icon{font-size:17px;flex:0 0 auto}
+  .route-owned-card .route-card-name{
+    width:auto;
+    min-width:0;
+    font-size:9.5px;
+    line-height:1.15;
+    text-align:left;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .route-owned-card .route-card-meta,
+  .route-owned-card .route-card-monsters{display:none}
+}
