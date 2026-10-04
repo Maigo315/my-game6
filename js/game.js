@@ -452,8 +452,10 @@
     return {cards,length,totalLevel,requiredCount,lengthOk,levelOk,terrainOk,ok:lengthOk&&levelOk&&terrainOk};
   }
   function routeCardMarkup(card,{owned=false}={}){
-    const monsters=(card.monsters||[]).join("、");
-    return `<span class="route-card-icon">${card.icon}</span><span class="route-card-name">${card.name}</span><span class="route-card-meta">ノード数: ${card.nodeCount}<br>横幅: ${card.width}<br>宝箱ランク: ${card.treasureTier}<br>タグ: ${card.tags.join(" / ")}</span>${owned?`<span class="route-card-monsters">出現魔物娘: ${monsters}</span>`:""}`;
+    if(owned){
+      return `<span class="route-card-icon">${card.icon}</span><span class="route-card-name">${card.name}</span>`;
+    }
+    return `<span class="route-card-icon">${card.icon}</span><span class="route-card-name">${card.name}</span><span class="route-card-meta"><span><b>ノード</b>${card.nodeCount}</span><span><b>横幅</b>${card.width}</span><span><b>宝箱</b>Lv${card.treasureTier}</span><span class="route-card-tags"><b>タグ</b>${card.tags.join(" / ")}</span></span>`;
   }
   function renderRoutePrototypeEditor(){
     ensureFradbergState();
