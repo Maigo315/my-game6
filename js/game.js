@@ -76,7 +76,12 @@
     exploreSkillId: null,
     exploreItemId:"potion",
     pendingRecruitCandidate: null,
-    fortuneCasts: 0
+    fortuneCasts: 0,
+    fradberg:{
+      ownedRoutes:["plains_1","plains_2","cave_1"],
+      clearedDestinations:[]
+    },
+    routeDraft:[]
   };
 
   const ELIZA_EVENT_IMG = 'assets/npcs/eliza_event.webp';
@@ -278,6 +283,7 @@
     heal:   {icon:"❤", label:"回復", color:"#3d7355"},
     shop:   {icon:"🛒", label:"ショップ", color:"#53608b"},
     event:  {icon:"？", label:"イベント", color:"#664c7c"},
+    routeExit:{icon:"→", label:"次の地形へ", color:"#47776f"},
     healLeafGoal:{icon:"🍃",label:"ヒールリーフ",color:"#3f7652"},
     empty:  {icon:"·", label:"何もない", color:"#40505a"},
     stairs: {icon:"⬇", label:"第二層へ", color:"#496d78"},
@@ -410,6 +416,182 @@
     {id:"salidQueen",name:"サリード女王",gender:"female",portrait:SAPHIRA_IMG}
   ];
 
+
+  // v0.01: 新作「境界のフラドベルグ」用ルート探索プロトタイプ。
+  // 旧作側のデータと探索処理を残したまま、別入口として検証する。
+  const FRADBERG_ROUTE_CARDS={
+    plains_1:{id:"plains_1",name:"平原Lv1",terrain:"平原",level:1,nodeCount:5,width:"広い",icon:"🌾",treasureTier:1,tags:["フィールド"],connect:["フィールド","洞窟"],monsters:["スライム娘","犬娘"],battleArea:"plains",layerCounts:[2,3,3,2]},
+    plains_2:{id:"plains_2",name:"平原Lv2",terrain:"平原",level:2,nodeCount:5,width:"広い",icon:"🌾",treasureTier:2,tags:["フィールド"],connect:["フィールド","洞窟"],monsters:["スライムベス娘","ウサギ娘","ハーピー"],battleArea:"plains",layerCounts:[3,4,3,3]},
+    cave_1:{id:"cave_1",name:"洞窟Lv1",terrain:"洞窟",level:1,nodeCount:5,width:"狭い",icon:"🪨",treasureTier:1,tags:["ダンジョン","洞窟"],connect:["フィールド","洞窟"],monsters:["フェアリー","ナメクジ娘"],battleArea:"cave1",layerCounts:[1,2,1,2]},
+    forest_1:{id:"forest_1",name:"森林Lv1",terrain:"森林",level:1,nodeCount:5,width:"普通",icon:"🌲",treasureTier:1,tags:["フィールド","森林"],connect:["フィールド","森林","洞窟"],monsters:["仮設定"],battleArea:"plains",layerCounts:[2,3,2,3]},
+    cave_2:{id:"cave_2",name:"洞窟Lv2",terrain:"洞窟",level:2,nodeCount:5,width:"狭い",icon:"🪨",treasureTier:2,tags:["ダンジョン","洞窟"],connect:["フィールド","洞窟"],monsters:["仮設定"],battleArea:"cave1",layerCounts:[1,2,2,1]}
+  };
+  const FRADBERG_DESTINATION={
+    id:"dimensional_ruins",name:"次元の廃墟",minLength:2,maxLength:4,minTotalLevel:3,
+    requiredTerrain:"洞窟",requiredLevel:1,rewardRoutes:["forest_1","cave_2"]
+  };
+
+  function ensureFradbergState(){
+    if(!state.fradberg || typeof state.fradberg!=="object") state.fradberg={};
+    if(!Array.isArray(state.fradberg.ownedRoutes)) state.fradberg.ownedRoutes=["plains_1","plains_2","cave_1"];
+    if(!Array.isArray(state.fradberg.clearedDestinations)) state.fradberg.clearedDestinations=[];
+    if(!Array.isArray(state.routeDraft)) state.routeDraft=[];
+  }
+  function routePrototypeOwnedCards(){
+    ensureFradbergState();
+    return state.fradberg.ownedRoutes.map(id=>FRADBERG_ROUTE_CARDS[id]).filter(Boolean);
+  }
+  function routePrototypeValidation(){
+    ensureFradbergState();
+    const cards=state.routeDraft.map(id=>FRADBERG_ROUTE_CARDS[id]).filter(Boolean);
+    const length=cards.length,totalLevel=cards.reduce((sum,c)=>sum+c.level,0);
+    const requiredCount=cards.filter(c=>c.terrain===FRADBERG_DESTINATION.requiredTerrain && c.level>=FRADBERG_DESTINATION.requiredLevel).length;
+    const lengthOk=length>=FRADBERG_DESTINATION.minLength && length<=FRADBERG_DESTINATION.maxLength;
+    const levelOk=totalLevel>=FRADBERG_DESTINATION.minTotalLevel;
+    const terrainOk=requiredCount>=1;
+    return {cards,length,totalLevel,requiredCount,lengthOk,levelOk,terrainOk,ok:lengthOk&&levelOk&&terrainOk};
+  }
+  function routeCardMarkup(card,{owned=false}={}){
+    const monsters=(card.monsters||[]).join("、");
+    return `<span class="route-card-icon">${card.icon}</span><span class="route-card-name">${card.name}</span><span class="route-card-meta">ノード数: ${card.nodeCount}<br>横幅: ${card.width}<br>宝箱ランク: ${card.treasureTier}<br>タグ: ${card.tags.join(" / ")}</span>${owned?`<span class="route-card-monsters">出現魔物娘: ${monsters}</span>`:""}`;
+  }
+  function renderRoutePrototypeEditor(){
+    ensureFradbergState();
+    const slots=$("routeSlots");
+    if(!slots) return;
+    slots.innerHTML="";
+    for(let i=0;i<FRADBERG_DESTINATION.maxLength;i++){
+      const btn=document.createElement("button");
+      btn.type="button";
+      btn.className="route-slot";
+      const id=state.routeDraft[i],card=FRADBERG_ROUTE_CARDS[id];
+      if(card){
+        btn.classList.add("filled");
+        btn.innerHTML=`<span class="route-slot-number">${i+1}</span>${routeCardMarkup(card)}<span class="route-card-remove">クリックで外す</span>`;
+        btn.onclick=()=>{state.routeDraft.splice(i,1);renderRoutePrototypeEditor();};
+      }else{
+        btn.innerHTML=`<span class="route-slot-number">${i+1}</span><span class="route-card-icon">＋</span><span class="route-card-name">空きスロット</span><span class="route-card-meta">所持ルートから追加</span>`;
+      }
+      slots.appendChild(btn);
+    }
+    const owned=$("routeOwnedGrid");
+    owned.innerHTML="";
+    routePrototypeOwnedCards().forEach(card=>{
+      const btn=document.createElement("button");btn.type="button";btn.className="route-owned-card";
+      btn.innerHTML=routeCardMarkup(card,{owned:true});
+      btn.onclick=()=>{
+        if(state.routeDraft.length>=FRADBERG_DESTINATION.maxLength){toast("ルートは最大4区画です");return;}
+        state.routeDraft.push(card.id);renderRoutePrototypeEditor();
+      };
+      owned.appendChild(btn);
+    });
+    const v=routePrototypeValidation();
+    const setCond=(id,text,ok)=>{const el=$(id);if(!el)return;el.textContent=text;el.classList.toggle("ok",ok);el.classList.toggle("ng",!ok);};
+    setCond("routeCondLength",`${v.length} / ${FRADBERG_DESTINATION.minLength}〜${FRADBERG_DESTINATION.maxLength}`,v.lengthOk);
+    setCond("routeCondLevel",`${v.totalLevel} / ${FRADBERG_DESTINATION.minTotalLevel}以上`,v.levelOk);
+    setCond("routeCondCave",`洞窟Lv1以上 ${v.requiredCount} / 1`,v.terrainOk);
+    $("routeDepartBtn").disabled=!v.ok;
+    const cleared=state.fradberg.clearedDestinations.includes(FRADBERG_DESTINATION.id);
+    $("routeBuildNote").textContent=v.ok
+      ? "条件達成。出発できます。カードをクリックすると取り外せます。"
+      : "条件を満たすように地形カードを組み合わせてください。配置済みカードはクリックで取り外せます。";
+    const reward=$("routeEditorScreen")?.querySelector(".route-reward-box span");
+    if(reward) reward.textContent=cleared?"獲得済み: 森林Lv1 / 洞窟Lv2":"新ルート「森林Lv1」「洞窟Lv2」解禁";
+  }
+  function openRoutePrototypeEditor(){
+    ensureFradbergState();
+    state.routeDraft=[];
+    if($("topTitle")) $("topTitle").textContent="境界ルート構築";
+    if($("topSubtitle")) $("topSubtitle").textContent=`境界のフラドベルグ ${DEV_VERSION}`;
+    renderRoutePrototypeEditor();
+    showScreen("routeEditorScreen");
+  }
+  function prototypeLayerXs(count){
+    if(count<=1) return [500];
+    if(count===2) return [350,650];
+    if(count===3) return [250,500,750];
+    return [170,390,610,830];
+  }
+  function prototypeWeightedNode(card,layer,index){
+    const roll=Math.random()*100;
+    if(roll<47) return "battle";
+    if(roll<65) return "chest";
+    if(roll<77) return "heal";
+    if(roll<91) return "event";
+    return "empty";
+  }
+  function buildPrototypeRouteMap(card){
+    const layers=[];
+    layers.push([{id:"L0N0",layer:0,index:0,x:500,y:655,type:"start",out:[]}]);
+    (card.layerCounts||[2,3,2,2]).slice(0,4).forEach((count,idx)=>{
+      const layer=idx+1,xs=prototypeLayerXs(count);
+      layers.push(xs.map((x,i)=>({id:`L${layer}N${i}`,layer,index:i,x:x+(Math.floor(Math.random()*31)-15),y:655-layer*110,type:prototypeWeightedNode(card,layer,i),out:[]})));
+    });
+    layers.push([{id:"ROUTE_EXIT",layer:5,index:0,x:500,y:105,type:"routeExit",out:[]}]);
+    connectMapLayers(layers,{extraChance:card.terrain==="平原"?.45:card.terrain==="洞窟"?.16:.30,maxExtraDistance:520});
+    return layers.flat();
+  }
+  function prototypeCurrentCard(){return state.run?.prototypeRoute ? FRADBERG_ROUTE_CARDS[state.run.routeCards?.[state.run.routeIndex]] : null;}
+  function startPrototypeRoute(){
+    const v=routePrototypeValidation();
+    if(!v.ok) return;
+    restorePartyFull();
+    state.run={
+      area:"fradbergRoute",prototypeRoute:true,routeCards:[...state.routeDraft],routeIndex:0,
+      nodes:buildPrototypeRouteMap(v.cards[0]),current:"L0N0",previous:null,visited:new Set(["L0N0"]),resolved:new Set(),
+      runGold:0,runExp:0,stealthUsed:false,slugTrapActive:false,toxicGateCleared:false,ruinsCursePending:false
+    };
+    setExploreAreaLabel();showScreen("exploreScreen");renderMap();updateRunHud();
+    requestAnimationFrame(()=>scrollMapToCurrent(true));
+    toast(`${v.cards[0].name} の探索を開始`);
+  }
+  function advancePrototypeRouteCard(){
+    if(!state.run?.prototypeRoute) return;
+    const next=state.run.routeIndex+1;
+    if(next>=state.run.routeCards.length){finishPrototypeDestination();return;}
+    state.run.routeIndex=next;
+    const card=prototypeCurrentCard();
+    state.run.nodes=buildPrototypeRouteMap(card);
+    resetRunMapLocalState();
+    setExploreAreaLabel();renderMap();updateRunHud();
+    requestAnimationFrame(()=>scrollMapToCurrent(true));
+    toast(`${card.name} へ接続した`);
+  }
+  function finishPrototypeDestination(){
+    ensureFradbergState();
+    const first=!state.fradberg.clearedDestinations.includes(FRADBERG_DESTINATION.id);
+    if(first){
+      state.fradberg.clearedDestinations.push(FRADBERG_DESTINATION.id);
+      FRADBERG_DESTINATION.rewardRoutes.forEach(id=>{if(!state.fradberg.ownedRoutes.includes(id))state.fradberg.ownedRoutes.push(id);});
+    }
+    modal("🏚️ 次元の廃墟",first
+      ? "目的地に到達した！\n\nルート接続試験に成功。\n試作報酬として「森林Lv1」「洞窟Lv2」が解禁されました。"
+      : "目的地に到達した！\n\nルート接続試験に成功しました。",[["前線都市へ帰還",()=>{closeModal();state.run=null;restorePartyFull();showTownScreen("milesta");toast("次元の廃墟から帰還しました");}]]);
+  }
+  function resolvePrototypeNode(node){
+    if(!state.run?.prototypeRoute || !node) return false;
+    if(node.type!=="routeExit" && state.run.resolved.has(node.id)) return true;
+    if(node.type!=="routeExit") state.run.resolved.add(node.id);
+    const card=prototypeCurrentCard();
+    switch(node.type){
+      case "battle":
+        openRunBattle(card?.battleArea||"plains",{formationIndex:0});
+        break;
+      case "chest":
+        modal("🪎 仮宝箱",`${card?.name||"この地形"}の宝箱ランクは ${card?.treasureTier||1}。\n\n中身のテーブルは未設定のため、v0.01では報酬を獲得しません。`,[["進む",closeModal]]);
+        break;
+      case "heal": {
+        const r=recoverTravelParty(.25,.10);updateRunHud();
+        modal("❤ 仮休息地点",`探索仕様確認用の休息ノード。\nHP25% / MP10% 回復。\n\n合計 HP +${r.hpGain} / MP +${r.mpGain}`,[["進む",closeModal]]);break;
+      }
+      case "event":
+        modal("？ 仮イベント",`${card?.name||"地形"}用イベントはまだ未設定です。\n\n将来ここから地形別イベントテーブルを参照します。`,[["進む",closeModal]]);break;
+      case "empty": toast("何も起こらなかった");break;
+      case "routeExit": advancePrototypeRouteCard();break;
+    }
+    return true;
+  }
+
   const screens = [...document.querySelectorAll(".screen")];
   const $ = id => document.getElementById(id);
 
@@ -419,7 +601,7 @@
     document.body.classList.toggle("battle-mode",id==="battleScreen");
   }
   const TOWN_INFO={
-    milesta:{name:"辺境の町ミレスタ",shortName:"ミレスタ",shop:"town"},
+    milesta:{name:"前線都市（仮）",shortName:"前線都市",shop:"town"},
     yody:{name:"港町ヨーディー",shortName:"港町ヨーディー",shop:"yordy"},
     tileno:{name:"ティレーノの街",shortName:"ティレーノの街",shop:"tileno"},
     granzel:{name:"グランゼル城下町",shortName:"グランゼル城下町",shop:"granzel"},
@@ -445,7 +627,7 @@
     if($("townHomeTitle")) $("townHomeTitle").textContent=info.name;
     if($("topTitle")) $("topTitle").textContent=info.name;
     if($("topSubtitle")) $("topSubtitle").textContent=`${info.shortName} ${DEV_VERSION}`;
-    if($("goWorld")) $("goWorld").innerHTML=state.currentTown==="kunputei"?'<span class="icon">🚪</span>出発する':'<span class="icon">🗺️</span>世界マップ';
+    if($("goWorld")) $("goWorld").innerHTML=state.currentTown==="kunputei"?'<span class="icon">🚪</span>出発する':'<span class="icon">🗺️</span>旧作世界マップ（確認用）';
     showScreen("homeScreen");
     updateHeader();
     maybeStartGranzelArrivalPoster();
@@ -1871,6 +2053,10 @@
       ["薫風亭へ戻る",closeModal]
     ]);
   }
+  if($("routePrototypeBtn")) $("routePrototypeBtn").onclick=openRoutePrototypeEditor;
+  if($("routeEditorBackBtn")) $("routeEditorBackBtn").onclick=()=>showTownScreen("milesta");
+  if($("routeClearBtn")) $("routeClearBtn").onclick=()=>{state.routeDraft=[];renderRoutePrototypeEditor();};
+  if($("routeDepartBtn")) $("routeDepartBtn").onclick=startPrototypeRoute;
   $("goWorld").onclick=()=>{
     if(state.currentTown==="kunputei"){departKunputei();return;}
     $("topSubtitle").textContent=`世界マップ ${DEV_VERSION}`;
@@ -4425,6 +4611,7 @@
       caveBossDefeated:!!state.caveBossDefeated,
       eventFlags:{...(state.eventFlags||{})},
       prologueStage:prologueStage(),
+      fradberg:{ownedRoutes:[...(state.fradberg?.ownedRoutes||[])],clearedDestinations:[...(state.fradberg?.clearedDestinations||[])]},
       selectedArea:state.selectedArea||"plains",
       currentTown:normalizeTownKey(state.currentTown),
       run:serializeRun(state.run),
@@ -4460,6 +4647,11 @@
     state.caveBossDefeated=!!data.caveBossDefeated;
     state.eventFlags={...(base.eventFlags||{}),...(data.eventFlags||{})};
     state.prologueStage=Number.isFinite(Number(data.prologueStage)) ? Math.max(0,Number(data.prologueStage)) : (data.eventFlags?.milestaIntroDone ? 4 : Number(base.prologueStage)||0);
+    state.fradberg={
+      ownedRoutes:Array.isArray(data.fradberg?.ownedRoutes)?[...new Set(data.fradberg.ownedRoutes.filter(id=>FRADBERG_ROUTE_CARDS[id]))]:["plains_1","plains_2","cave_1"],
+      clearedDestinations:Array.isArray(data.fradberg?.clearedDestinations)?[...new Set(data.fradberg.clearedDestinations)]:[]
+    };
+    state.routeDraft=[];
     state.storyEventRuntime=null;
     state.selectedArea=data.selectedArea||"plains";
     state.currentTown=normalizeTownKey(data.currentTown||base.currentTown||"milesta");
@@ -4705,11 +4897,15 @@
     const name=normalizeHeroName(input.value)||"ロイド";
     roster.hero.name=name;
     updateHeader();
-    // v0.38e: keep the name layer on top until the prologue layer is fully prepared.
+    // v0.01 prototype: 旧作プロローグを通さず、新作の前線都市から開始する。
+    state.prologueStage=4;
+    state.eventFlags={...(state.eventFlags||{}),recruitTutorialDone:true};
+    ensureFradbergState();
+    state.currentTown="milesta";
+    state.selectedArea="plains";
     showTownScreen("milesta");
-    startStoryEvent("milestaIntroEliza");
     $("nameEntryModal").classList.remove("show");
-    toast("新しい冒険を始めます。");
+    toast("前線都市に到着しました。境界ルートを試せます。");
   }
   function startNewGame(){
     if(!initialGameSnapshot) return;
@@ -4720,7 +4916,7 @@
     state.run=null;
     restorePartyFull();
     updateWorld(); updateHeader();
-    $("topSubtitle").textContent=`探索＋勧誘・装備試作 ${DEV_VERSION}`;
+    $("topSubtitle").textContent=`境界のフラドベルグ ${DEV_VERSION}`;
     openHeroNameEntry();
   }
   function confirmReturnToTitle(){
@@ -4728,8 +4924,8 @@
   }
   function showTitleScreen(){
     refreshTitleContinue();
-    if($("topTitle")) $("topTitle").textContent="辺境の町ミレスタ";
-    if($("topSubtitle")) $("topSubtitle").textContent=`探索＋勧誘・装備試作 ${DEV_VERSION}`;
+    if($("topTitle")) $("topTitle").textContent="境界のフラドベルグ";
+    if($("topSubtitle")) $("topSubtitle").textContent=`新作ルート探索プロトタイプ ${DEV_VERSION}`;
     showScreen("titleScreen");
   }
   $("saveCloseBtn").onclick=closeSaveUi;
@@ -13474,7 +13670,8 @@
   }
 
   function currentRunAreaUi(){
-    if(!state.run) return {icon:"🌿",name:"ミレスタ平原"};
+    if(!state.run) return {icon:"🌀",name:"境界ルート"};
+    if(state.run.prototypeRoute){const c=prototypeCurrentCard();return {icon:c?.icon||"🌀",name:c?.name||"境界ルート"};}
     if(state.run.area==="cave") return {icon:"🕳️",name:`小さな洞窟・第${state.run.caveLayer===1?"一":"二"}層`};
     if(state.run.area==="caveSide") return {icon:"🕳️",name:"洞窟の横道"};
     if(state.run.area==="yodyRegion") return {icon:"🌊",name:"ヨーディー地方"};
@@ -14548,7 +14745,11 @@
 
   function updateRunHud(){
     const cur=byId(state.run.current);
-    if(state.run.area==="cave"){
+    if(state.run.prototypeRoute){
+      const card=prototypeCurrentCard(),index=(Number(state.run.routeIndex)||0)+1,total=state.run.routeCards?.length||1;
+      $("floorText").textContent=cur?.type==="routeExit"?`区画 ${index}/${total} 出口`:`区画 ${index}/${total} ・ ${cur?.layer||0}/5`;
+      if($("exploreAreaLabel")) $("exploreAreaLabel").innerHTML=`${card?.icon||"🌀"} ${card?.name||"境界ルート"}<span class="prototype-area-progress">ROUTE ${index}/${total}</span>`;
+    }else if(state.run.area==="cave"){
       const layerName=state.run.caveLayer===1?"第一層":"第二層";
       $("floorText").textContent=cur.layer===0?`${layerName} 入口`:cur.layer===6?`${layerName} 最奥`:`${layerName} ${cur.layer}F`;
     }else if(state.run.area==="caveSide"){
@@ -14662,7 +14863,8 @@
       toast(state.run.area==="salidDesert"?"キャラバンで一段先まで進んだ":"荷馬車で一段先まで進んだ");
       return;
     }
-    resolveNode(node);
+    if(state.run?.prototypeRoute) resolvePrototypeNode(node);
+    else resolveNode(node);
   }
 
   function addRunGold(amount){ state.gold+=amount; if(state.run)state.run.runGold+=amount; updateHeader(); }
